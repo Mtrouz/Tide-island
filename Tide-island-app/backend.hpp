@@ -18,6 +18,7 @@ class Backend final : public QObject {
     Q_PROPERTY(QString userConfigPath READ userConfigPath CONSTANT)
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorStringChanged)
     Q_PROPERTY(QVariantMap userConfig READ userConfig CONSTANT)
+    Q_PROPERTY(QString colorScheme READ colorScheme WRITE setColorScheme NOTIFY colorSchemeChanged)
 
 public:
     explicit Backend(QObject *parent = nullptr);
@@ -25,8 +26,10 @@ public:
     QString userConfigPath() const;
     QString errorString() const;
     QVariantMap userConfig() const;
+    QString colorScheme() const;
 
     Q_INVOKABLE bool save(const QVariantMap &userConfig);
+    Q_INVOKABLE void setColorScheme(const QString &colorScheme);
     Q_INVOKABLE bool copyToClipboard(const QString &text);
     Q_INVOKABLE QVariantList shortcutBindings() const;
     Q_INVOKABLE QString currentCompositor() const;
@@ -46,6 +49,7 @@ public:
 
 signals:
     void errorStringChanged();
+    void colorSchemeChanged();
 
 private:
     QString hyprlandConfigPath() const;
@@ -67,5 +71,6 @@ private:
 
     QString m_userConfigPath;
     QString m_errorString;
+    QString m_colorScheme;
     UserConfigMap m_userConfig;
 };

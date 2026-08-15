@@ -18,6 +18,7 @@
 
 namespace {
 constexpr auto shortcutBindingsKey = "shortcutBindings";
+constexpr auto colorSchemeKey = "appearance/colorScheme";
 constexpr auto tideShortcutPrefix = "/usr/bin/quickshell ipc --any-display -p /usr/share/tide-island call ";
 constexpr auto legacyTideShortcutPrefix = "/usr/bin/quickshell ipc -p /usr/share/tide-island call ";
 constexpr auto quickshellPath = "/usr/bin/quickshell";
@@ -50,7 +51,7 @@ QVariantList defaultShortcutBindings()
     return {
         shortcutMap(QStringLiteral("SUPER"), QStringLiteral("TAB"), QStringLiteral("overview"), QStringLiteral("toggle")),
         shortcutMap(QStringLiteral("SUPER"), QStringLiteral("right"), QStringLiteral("tide"), QStringLiteral("swipeRight")),
-        shortcutMap(QStringLiteral("SUPER"), QStringLiteral("left"), QStringLiteral("tide"), QStringLiteral("showCustom")),
+        shortcutMap(QStringLiteral("SUPER"), QStringLiteral("left"), QStringLiteral("tide"), QStringLiteral("swipeLeft")),
         shortcutMap(QStringLiteral("SUPER"), QStringLiteral("down"), QStringLiteral("tide"), QStringLiteral("showClock")),
         shortcutMap(QStringLiteral("SUPER"), QStringLiteral("M"), QStringLiteral("tide"), QStringLiteral("togglePlayer")),
         shortcutMap(QStringLiteral("SUPER"), QStringLiteral("C"), QStringLiteral("tide"), QStringLiteral("toggleControlCenter")),
@@ -68,6 +69,18 @@ QString configHome()
         return QString::fromLocal8Bit(xdgConfigHome);
 
     return QDir::homePath() + QStringLiteral("/.config");
+}
+
+QString configAppSettingsPath()
+{
+    return configHome() + QStringLiteral("/tide-island/config-app.ini");
+}
+
+QString normalizedColorScheme(const QString &colorScheme)
+{
+    return colorScheme.trimmed().compare(QStringLiteral("dark"), Qt::CaseInsensitive) == 0
+        ? QStringLiteral("dark")
+        : QStringLiteral("light");
 }
 
 QString dataHome()
@@ -203,6 +216,13 @@ ShortcutBinding migratedShortcutBinding(ShortcutBinding binding)
         && binding.mods.compare(QStringLiteral("SUPER"), Qt::CaseInsensitive) == 0
         && binding.key.compare(QStringLiteral("right"), Qt::CaseInsensitive) == 0) {
         binding.method = QStringLiteral("swipeRight");
+    }
+
+    if (binding.target.compare(QStringLiteral("tide"), Qt::CaseInsensitive) == 0
+        && binding.method.compare(QStringLiteral("showCustom"), Qt::CaseInsensitive) == 0
+        && binding.mods.compare(QStringLiteral("SUPER"), Qt::CaseInsensitive) == 0
+        && binding.key.compare(QStringLiteral("left"), Qt::CaseInsensitive) == 0) {
+        binding.method = QStringLiteral("swipeLeft");
     }
 
     return binding;
@@ -496,7 +516,13 @@ std::size_t QStringHash::operator()(const QString &key) const noexcept{
     return static_cast<std::size_t>(qHash(key));
 }
 
-Backend::Backend(QObject *parent) : QObject(parent), m_userConfigPath(configHome() + QStringLiteral("/tide-island/userconfig.json")){
+Backend::Backend(QObject *parent)
+    : QObject(parent)
+    , m_userConfigPath(configHome() + QStringLiteral("/tide-island/userconfig.json"))
+{
+    QSettings settings(configAppSettingsPath(), QSettings::IniFormat);
+    m_colorScheme = normalizedColorScheme(
+        settings.value(QString::fromLatin1(colorSchemeKey), QStringLiteral("light")).toString());
     load();
 }
 
@@ -510,6 +536,22 @@ QString Backend::errorString() const{
 
 QVariantMap Backend::userConfig() const{
     return toVariantMap();
+}
+
+QString Backend::colorScheme() const{
+    return m_colorScheme;
+}
+
+void Backend::setColorScheme(const QString &colorScheme){
+    const QString normalized = normalizedColorScheme(colorScheme);
+    if (m_colorScheme == normalized)
+        return;
+
+    m_colorScheme = normalized;
+    QSettings settings(configAppSettingsPath(), QSettings::IniFormat);
+    settings.setValue(QString::fromLatin1(colorSchemeKey), m_colorScheme);
+    settings.sync();
+    emit colorSchemeChanged();
 }
 
 bool Backend::save(const QVariantMap &userConfig){

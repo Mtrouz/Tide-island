@@ -2,41 +2,48 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    // Semantic mapping of the supplied settings-page reference.
-    readonly property color totalBgColor: "#faf9f5"
-    readonly property color componentBgColor: "#f0efe9"
-    readonly property color cardBgColor: "#ffffff"
-    readonly property color cardBorderColor: "#e8e6dd"
-    readonly property color tableHeaderBgColor: "#f0efe9"
-    readonly property color tableFooterBgColor: "#faf9f5"
+    // Dark values follow the current Claude web palette: bg-100/bg-200/bg-000,
+    // gray-20/gray-200/gray-350, and the clay brand token.
+    readonly property bool darkMode: backend.colorScheme === "dark"
 
-    readonly property color inputBgColor: "#faf9f5"
-    readonly property color inputHoverBgColor: "#faf9f5"
-    readonly property color inputBorderColor: "#e8e6dd"
-    readonly property color inputHoverBorderColor: "#e8e6dd"
-    readonly property color focusBorderColor: "#cc785c"
-    readonly property color focusRingColor: "#f3e7df"
+    readonly property color totalBgColor: darkMode ? "#20201f" : "#faf9f5"
+    readonly property color componentBgColor: darkMode ? "#181817" : "#f0efe9"
+    readonly property color cardBgColor: darkMode ? "#2c2c2a" : "#ffffff"
+    readonly property color cardBorderColor: darkMode ? "#474744" : "#e8e6dd"
+    readonly property color tableHeaderBgColor: darkMode ? "#181817" : "#f0efe9"
+    readonly property color tableFooterBgColor: darkMode ? "#20201f" : "#faf9f5"
 
-    readonly property color textColor: "#1f1e1b"
-    readonly property color secondaryTextColor: "#6b6a63"
-    readonly property color subtleTextColor: "#6b6a63"
-    readonly property color splitLineColor: "#e8e6dd"
+    readonly property color inputBgColor: darkMode ? "#20201f" : "#faf9f5"
+    readonly property color inputHoverBgColor: darkMode ? "#282827" : "#faf9f5"
+    readonly property color inputBorderColor: darkMode ? "#3d3d3b" : "#e8e6dd"
+    readonly property color inputHoverBorderColor: darkMode ? "#5a5a57" : "#e8e6dd"
+    readonly property color focusBorderColor: darkMode ? "#d97757" : "#cc785c"
+    readonly property color focusRingColor: darkMode ? "#59382f" : "#f3e7df"
 
-    readonly property color buttonColor: "#cc785c"
-    readonly property color buttonHoverColor: "#b4634a"
-    readonly property color buttonPressedColor: "#a85740"
-    readonly property color buttonTextColor: "#ffffff"
-    readonly property color mutedButtonColor: "#ffffff"
-    readonly property color mutedButtonHoverColor: "#f0efe9"
-    readonly property color mutedButtonTextColor: "#1f1e1b"
-    readonly property color controlHoverColor: "#f0efe9"
-    readonly property color controlPressedColor: "#e8e6dd"
+    readonly property color textColor: darkMode ? "#f9f9f7" : "#1f1e1b"
+    readonly property color secondaryTextColor: darkMode ? "#c3c2b7" : "#6b6a63"
+    readonly property color subtleTextColor: darkMode ? "#97958d" : "#6b6a63"
+    readonly property color splitLineColor: darkMode ? "#3d3d3b" : "#e8e6dd"
 
-    readonly property color accentColor: "#cc785c"
-    readonly property color accentDarkColor: "#b4634a"
-    readonly property color accentSoftColor: "#f3e7df"
-    readonly property color selectedColor: "#cc785c"
-    readonly property color overlayColor: "#1f1e1b66"
+    readonly property color buttonColor: darkMode ? "#d97757" : "#cc785c"
+    readonly property color buttonHoverColor: darkMode ? "#c6613f" : "#b4634a"
+    readonly property color buttonPressedColor: darkMode ? "#ad5235" : "#a85740"
+    readonly property color buttonTextColor: darkMode ? "#141413" : "#ffffff"
+    readonly property color mutedButtonColor: darkMode ? "#2c2c2a" : "#ffffff"
+    readonly property color mutedButtonHoverColor: darkMode ? "#383835" : "#f0efe9"
+    readonly property color mutedButtonTextColor: darkMode ? "#f9f9f7" : "#1f1e1b"
+    readonly property color controlHoverColor: darkMode ? "#383835" : "#f0efe9"
+    readonly property color controlPressedColor: darkMode ? "#454543" : "#e8e6dd"
+
+    readonly property color accentColor: darkMode ? "#d97757" : "#cc785c"
+    readonly property color accentDarkColor: darkMode ? "#c6613f" : "#b4634a"
+    readonly property color accentSoftColor: darkMode ? "#483831" : "#f3e7df"
+    readonly property color selectedColor: darkMode ? "#d97757" : "#cc785c"
+    readonly property color overlayColor: darkMode ? "#a3000000" : "#661f1e1b"
+
+    readonly property color errorBgColor: darkMode ? "#3c0e0e" : "#fff1ed"
+    readonly property color errorBorderColor: darkMode ? "#641919" : "#f2b8a2"
+    readonly property color errorTextColor: darkMode ? "#f4abab" : "#8f2f16"
 
     readonly property int animationDuration: 160
 

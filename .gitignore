@@ -81,3 +81,4 @@ CODE_QUALITY_REVIEW.md
 # OS files
 .DS_Store
 Thumbs.db
+compilar.sh

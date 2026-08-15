@@ -36,6 +36,7 @@ PagePanel {
                 id: title
                 font.family: Theme.titleFontFamily
                 text: "Wallpaper"
+                color: Theme.textColor
                 font.pixelSize: 30
                 x: 60
                 y: 50

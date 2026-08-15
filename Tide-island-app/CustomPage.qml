@@ -348,7 +348,7 @@ Rectangle {
                     anchors.centerIn: parent
                     visible: selectedModel.count === 0
                     text: "+"
-                    color: "#ffffff66"
+                    color: "#66ffffff"
                     font.family: Theme.textFontFamily
                     font.pixelSize: 24
                     font.weight: Font.DemiBold

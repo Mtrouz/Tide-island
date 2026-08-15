@@ -13,15 +13,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/enhaoswen/Tide-island/stargazers">
-    <img alt="GitHub stars" src="https://img.shields.io/github/stars/enhaoswen/Tide-island?style=flat-square&color=8aadf4">
-  </a>
-  <a href="https://github.com/enhaoswen/Tide-island/issues">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/enhaoswen/Tide-island?style=flat-square&color=8aadf4">
-  </a>
-  <a href="https://aur.archlinux.org/packages/tide-island">
-    <img alt="AUR package" src="https://img.shields.io/aur/version/tide-island?style=flat-square&label=AUR&color=8aadf4">
-  </a>
+  <a href="https://github.com/enhaoswen/Tide-island/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/enhaoswen/Tide-island?style=flat-square&color=8aadf4"></a>
+  <a href="https://github.com/enhaoswen/Tide-island/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/enhaoswen/Tide-island?style=flat-square&color=8aadf4"></a>
+  <a href="https://aur.archlinux.org/packages/tide-island"><img alt="AUR package" src="https://img.shields.io/aur/version/tide-island?style=flat-square&label=AUR&color=8aadf4"></a>
   <img alt="Hyprland" src="https://img.shields.io/badge/Hyprland-111111?style=flat-square&color=8aadf4">
   <img alt="niri" src="https://img.shields.io/badge/niri-111111?style=flat-square&color=8aadf4">
   <img alt="C++ + Qt" src="https://img.shields.io/badge/C%2B%2B%20%2B%20Qt-111111?style=flat-square&color=8aadf4">
@@ -198,7 +192,7 @@ Tide Island provides a systemd user service.
 Enable and start it immediately (Recommended):
 
 ```bash
-systemctl --user enable --now tide-island
+systemctl --user enable --now tide-island.service
 ```
 
 If you want to manage startup manually, add this to your `hyprland.conf`:
@@ -221,10 +215,6 @@ If the systemd service is already enabled, you do not need to add `exec-once`.
 
 Search `Tide Island Settings` in any application launcher
 
-The Shortcut page can apply bindings automatically. On niri it writes `~/.config/tide-island/niri-shortcuts.kdl`, includes it from `~/.config/niri/config.kdl`, validates with `niri validate`, then reloads niri with `niri msg action load-config-file`.
-
-
-
 ## Common Commands
 
 #### Restart after editing the configuration:
@@ -245,26 +235,14 @@ systemctl --user stop tide-island
 journalctl --user -u tide-island -f
 ```
 
-#### IPC Commands
-
-Tide Island can be controlled remotely via `quickshell ipc call`:
-
-| Command | Action |
-| --- | --- |
-| `quickshell ipc call tide toggleNotificationCenter` | Open or close the Notification Centre |
-| `quickshell ipc call tide openNotificationCenter` | Open the Notification Centre |
-| `quickshell ipc call tide closeNotificationCenter` | Close the Notification Centre |
-| `quickshell ipc call tide toggleApplicationLauncher` | Open or close the application launcher |
-
 <br>
-
-### Dismissing notifications
-
-Individual notifications can be dismissed by tapping the × button on the card. Use **Clear all** to remove all notifications at once.
 
 ## Contributing
 
 Issues, bug reports, design suggestions, and pull requests are all welcome.
+
+-  only 1 topic per issue.
+-  tell your ideas first before making a PR
 
 ## Acknowledgments
 
@@ -276,7 +254,7 @@ Thanks to:
 
 ## Community
 
-- Discord: https://discord.gg/gEmqgz76
+- Discord:https://discord.gg/Rcj3uPtKwD
 - Email: enhaoswen@gmail.com
 
 ---

@@ -27,18 +27,18 @@ PagePanel {
                 "method": "toggle"
             },
             {
-                "action": "Swipe right",
+                "action": "Next island view",
                 "mods": "SUPER",
                 "key": "right",
                 "target": "tide",
                 "method": "swipeRight"
             },
             {
-                "action": "Custom page",
+                "action": "Previous island view",
                 "mods": "SUPER",
                 "key": "left",
                 "target": "tide",
-                "method": "showCustom"
+                "method": "swipeLeft"
             },
             {
                 "action": "Clock view",

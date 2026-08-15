@@ -9,8 +9,22 @@ ApplicationWindow {
     height: 600
     title: "Tide Island Config Application"
     color: Theme.totalBgColor
+    palette.window: Theme.totalBgColor
+    palette.windowText: Theme.textColor
+    palette.base: Theme.inputBgColor
+    palette.alternateBase: Theme.componentBgColor
+    palette.text: Theme.textColor
+    palette.button: Theme.mutedButtonColor
+    palette.buttonText: Theme.mutedButtonTextColor
+    palette.highlight: Theme.selectedColor
+    palette.highlightedText: Theme.buttonTextColor
+    palette.placeholderText: Theme.subtleTextColor
 
     property int currentPage: 1
+
+    Behavior on color {
+        ColorAnimation { duration: Theme.animationDuration }
+    }
 
     function pageForIndex(index) {
         switch (index) {
@@ -235,6 +249,32 @@ ApplicationWindow {
             }
         }
 
+        Text {
+            id: appearanceButton
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 42
+            text: Theme.darkMode ? "Dark" : "Light"
+            color: Theme.textColor
+            font.family: Theme.titleFontFamily
+            font.pixelSize: 23
+
+            Behavior on color {
+                ColorAnimation { duration: Theme.animationDuration }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                anchors.margins: -10
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onEntered: appearanceButton.color = Theme.selectedColor
+                onExited: appearanceButton.color = Theme.textColor
+                onClicked: backend.setColorScheme(Theme.darkMode ? "light" : "dark")
+            }
+        }
+
     }
 
 
@@ -299,9 +339,9 @@ ApplicationWindow {
         anchors.bottomMargin: 18
         height: Math.max(48, errorText.implicitHeight + 20)
         radius: 8
-        color: "#fff1ed"
+        color: Theme.errorBgColor
         border.width: 1
-        border.color: "#f2b8a2"
+        border.color: Theme.errorBorderColor
 
         Behavior on opacity { NumberAnimation { duration: Theme.animationDuration } }
 
@@ -314,7 +354,7 @@ ApplicationWindow {
             anchors.rightMargin: 16
             anchors.verticalCenter: parent.verticalCenter
             text: "Config file error: " + ConfigStore.errorString
-            color: "#8f2f16"
+            color: Theme.errorTextColor
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight

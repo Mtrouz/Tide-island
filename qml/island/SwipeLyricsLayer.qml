@@ -25,7 +25,7 @@ Item {
     property real horizontalPadding: 14
     property real coverSize: 24
     property real coverRadius: 7
-    property real visualSpacing: 20
+    property real visualSpacing: 35
     property real hiddenLeftPadding: 18
     property real hiddenRightPadding: 16
     property string activeLyricText: lyricText

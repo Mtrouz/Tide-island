@@ -13,18 +13,21 @@ jobs:
   compatibility-build:
     name: Build on ${{ matrix.name }}
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Fedora 43
             image: fedora:43
+            experimental: false
             install: >-
               dnf install -y gcc-c++ cmake ninja-build pkgconf-pkg-config git
               tar dbus-daemon qt6-qtbase-devel qt6-qtdeclarative-devel
               qt6-qt5compat systemd-devel
           - name: Debian 13
             image: debian:trixie
+            experimental: false
             install: >-
               apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y
               build-essential cmake ninja-build pkg-config git tar dbus
@@ -32,7 +35,9 @@ jobs:
               qml6-module-qt5compat-graphicaleffects
           - name: openSUSE Tumbleweed
             image: opensuse/tumbleweed
+            experimental: true
             install: >-
+              zypper --non-interactive --gpg-auto-import-keys refresh &&
               zypper --non-interactive install --no-recommends gcc-c++ cmake
               ninja pkg-config git tar gzip dbus-1 qt6-base-devel
               qt6-declarative-devel qt6-qt5compat-imports systemd-devel

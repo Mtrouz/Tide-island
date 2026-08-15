@@ -227,6 +227,10 @@ Scope {
             shellRoot.forFocusedWindow((window) => window.swipeRightWindow());
         }
 
+        function swipeLeft() {
+            shellRoot.forFocusedWindow((window) => window.swipeLeftWindow());
+        }
+
         function togglePlayer() {
             shellRoot.forFocusedWindow((window) => window.togglePlayerWindow());
         }

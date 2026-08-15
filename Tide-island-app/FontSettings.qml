@@ -65,6 +65,7 @@ PagePanel {
                 id: title
                 font.family: Theme.titleFontFamily
                 text: "Font"
+                color: Theme.textColor
                 font.pixelSize: 30
                 x: 60
                 y: 50
@@ -81,6 +82,7 @@ PagePanel {
                 anchors.rightMargin: 40
                 font.family: Theme.titleFontFamily
                 font.pixelSize: 23
+                color: Theme.textColor
             }
 
             Rectangle {
@@ -209,6 +211,7 @@ PagePanel {
             text: row.title
             font.family: Theme.textFontFamily
             font.pixelSize: 18
+            color: Theme.textColor
             anchors.top: parent.top
             anchors.left: parent.left
         }

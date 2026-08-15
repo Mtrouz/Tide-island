@@ -123,6 +123,15 @@ PagePanel {
         revision += 1
     }
 
+    function islandShowWorkspaceOnAutoHide() {
+        return boolValue("islandShowWorkspaceOnAutoHide", true)
+    }
+
+    function setIslandShowWorkspaceOnAutoHide(enabled) {
+        ConfigStore.setValue("islandShowWorkspaceOnAutoHide", enabled)
+        ConfigStore.save()
+    }
+
     function islandAutoHideDelayMs() {
         revision
         return normalizedAutoHideDelay(ConfigStore.value("islandAutoHideDelayMs", 1000))
@@ -306,6 +315,10 @@ PagePanel {
                     SplitLine { width: parent.width }
 
                     AutoHideRow {
+                        width: parent.width
+                    }
+
+                    ShowWorkspaceAutoHideRow {
                         width: parent.width
                     }
 
@@ -537,6 +550,50 @@ PagePanel {
 
             onToggled: function(checked) {
                 root.setIslandAutoHideEnabled(checked)
+            }
+        }
+    }
+
+component ShowWorkspaceAutoHideRow: Item {
+        id: row
+        height: 49
+
+        enabled: root.islandAutoHideEnabled()
+        opacity: enabled ? 1.0 : 0.4
+
+        Text {
+            id: rowTitle
+            text: "Show Workspace Change"
+            anchors.left: parent.left
+            anchors.leftMargin: 24
+            anchors.top: parent.top
+            color: Theme.textColor
+            font.family: Theme.textFontFamily
+            font.pixelSize: 16
+        }
+
+        Text {
+            text: "Show pop-up when island is auto-hidden"
+            anchors.left: rowTitle.left
+            anchors.top: rowTitle.bottom
+            anchors.topMargin: 5
+            width: Math.max(80, parent.width - workspaceSwitch.width - 52)
+            color: Theme.subtleTextColor
+            elide: Text.ElideRight
+            font.family: Theme.textFontFamily
+            font.pixelSize: 13
+        }
+
+        StyledSwitch {
+            id: workspaceSwitch
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            
+            Component.onCompleted: checked = root.islandShowWorkspaceOnAutoHide()
+
+            onToggled: function(checkedValue) {
+                root.setIslandShowWorkspaceOnAutoHide(checkedValue)
+                checked = checkedValue 
             }
         }
     }

@@ -1,7 +1,7 @@
 <h1 align="center">Tide Island</h1>
 
 <p align="center">
-  <b>一个为 Hyprland 和 niri 打造的流畅、轻量、灵活的交互式 Dynamic Island。</b>
+  <b>一个为 Hyprland 和 niri 打造的流畅、轻量且灵活的交互式灵动岛。</b>
 </p>
 
 <p align="center">
@@ -13,15 +13,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/enhaoswen/Tide-island/stargazers">
-    <img alt="GitHub stars" src="https://img.shields.io/github/stars/enhaoswen/Tide-island?style=flat-square&color=8aadf4">
-  </a>
-  <a href="https://github.com/enhaoswen/Tide-island/issues">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/enhaoswen/Tide-island?style=flat-square&color=8aadf4">
-  </a>
-  <a href="https://aur.archlinux.org/packages/tide-island">
-    <img alt="AUR package" src="https://img.shields.io/aur/version/tide-island?style=flat-square&label=AUR&color=8aadf4">
-  </a>
+  <a href="https://github.com/enhaoswen/Tide-island/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/enhaoswen/Tide-island?style=flat-square&color=8aadf4"></a>
+  <a href="https://github.com/enhaoswen/Tide-island/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/enhaoswen/Tide-island?style=flat-square&color=8aadf4"></a>
+  <a href="https://aur.archlinux.org/packages/tide-island"><img alt="AUR package" src="https://img.shields.io/aur/version/tide-island?style=flat-square&label=AUR&color=8aadf4"></a>
   <img alt="Hyprland" src="https://img.shields.io/badge/Hyprland-111111?style=flat-square&color=8aadf4">
   <img alt="niri" src="https://img.shields.io/badge/niri-111111?style=flat-square&color=8aadf4">
   <img alt="C++ + Qt" src="https://img.shields.io/badge/C%2B%2B%20%2B%20Qt-111111?style=flat-square&color=8aadf4">
@@ -37,17 +31,19 @@
   <a href="#配置">配置</a>
   ·
   <a href="#常用命令">常用命令</a>
+  ·
+  <a href="#清除通知">通知中心</a>
 </p>
 
 ---
 
 ## 关于 Tide Island
 
-Tide Island 是一个给 Hyprland 和 niri 用的小桌面组件，做成了类似灵动岛的样式。
+Tide Island 是一款面向 Hyprland 和 niri 的小型桌面组件，采用类似灵动岛的设计。
 
-平时没什么事的时候，它就待在角落里，不碍眼；需要看信息的时候，再展开成一个面板，可以看歌词、切换工作区、调系统设置、看通知，或者放几个自定义内容。
+平时没有什么动静时，它就安静地待在角落，不会碍事。需要查看信息时，它会展开成一个面板，让你查看歌词、切换工作区、调整系统设置、查看通知，或放置一些自定义内容。
 
-这是用 Quickshell、QML 和 C++/Qt 6 写的，主要的功夫都花在让动画尽量顺滑、操作跟手、资源占用也尽量克制上。不敢说有多好，但希望能用得舒服。
+它基于 Quickshell、QML 和 C++/Qt 6 构建。开发时的大部分精力都花在了让动画尽可能流畅、交互足够跟手，同时控制好资源占用上。谈不上有什么特别，但希望它用起来足够舒服。
 
 <br>
 
@@ -58,31 +54,31 @@ Tide Island 是一个给 Hyprland 和 niri 用的小桌面组件，做成了类�
 <table>
   <tr>
     <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/mp.png" width="100%" alt="Music player" />
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/mp.png" width="100%" alt="音乐播放器" />
     </td>
     <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/msg.png" width="100%" alt="Message preview" />
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/timer.png" width="100%" alt="Timer" />
-    </td>
-    <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/wallpaper%20switcher.png" width="100%" alt="Wallpaper switcher" />
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/msg.png" width="100%" alt="消息预览" />
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/cc_2.png" width="100%" alt="Control center" />
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/timer.png" width="100%" alt="计时器" />
     </td>
     <td width="50%">
-      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/Workspace overview_2.png" width="100%" alt="Workspace overview" />
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/wallpaper%20switcher.png" width="100%" alt="壁纸切换器" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/cc_2.png" width="100%" alt="控制中心" />
+    </td>
+    <td width="50%">
+      <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/Workspace overview_2.png" width="100%" alt="工作区总览" />
     </td>
   </tr>
 </table>
 
-### 配置软件
+### 配置应用
 
 <img src="https://raw.githubusercontent.com/enhaoswen/Tide-island/display/Preview/config_app.png" width = "90%">
 <br>
@@ -91,38 +87,42 @@ Tide Island 是一个给 Hyprland 和 niri 用的小桌面组件，做成了类�
 
 - 时钟
 - 音乐播放器
-- 计时器
 - 控制中心
-- 歌词展示页面
+- 计时器
+- 歌词显示
 - 应用启动器
-- 自定义页面
 - 壁纸切换器
 - 工作区总览
+- 自定义页面
+- 通知中心
 
 ### 系统反馈
 
-Tide Island 可以显示以下临时反馈：
-
 - 音量变化
 - 亮度变化
-- 电池充电 / 放电状态
+- 电池充电 / 放电
 - 工作区切换
-- 媒体播放
+- 媒体播放（可选）
 - 系统通知
 
-### 自定义页面项目
-
-自定义页面可以显示：
+### 自定义页面
 
 - 时间
 - 日期
 - 电池
 - 音量
+- CPU 占用
+- 当前工作区
+- 内存占用
 - 亮度
-- 工作区
-- CPU
-- RAM
-- CAVA 音频可视化
+- Cava
+- 存储占用
+
+### 合成器支持
+
+- Hyprland：提供完整的现有体验，包括 Tide 的工作区总览、工作区动画、快捷键，以及通过 `hyprsunset` 实现的 Night Light（夜间色温调节）。
+- niri：支持灵动岛视图、基于当前聚焦输出的 IPC 命令、工作区切换提示、niri 原生总览、通过 `~/.config/tide-island/niri-shortcuts.kdl` 配置快捷键，以及通过 `gammastep` 实现的 Night Light（夜间色温调节）。
+- Tide 会优先检查 `TIDE_ISLAND_COMPOSITOR`，随后检查 `$XDG_CURRENT_DESKTOP`。只有在无法通过桌面环境确定合成器时，才会检查 `$NIRI_SOCKET`，最后回退到 Hyprland。这样可以避免继承的合成器套接字导致误判。
 
 <br>
 
@@ -138,8 +138,7 @@ yay -S tide-island
 
 ### 其他 Linux 发行版
 
-从[最新 GitHub Release](https://github.com/enhaoswen/Tide-island/releases/latest)
-下载源码包和校验文件：
+从[最新的 GitHub Release](https://github.com/enhaoswen/Tide-island/releases/latest)下载源码包和校验文件：
 
 ```bash
 curl -fLO https://github.com/enhaoswen/Tide-island/releases/latest/download/tide-island-source.tar.xz
@@ -150,32 +149,30 @@ cd Tide-island-*
 ./install.sh
 ```
 
-安装程序会把 Tide Island 安装到 `/usr`，目前可以自动安装以下发行版的依赖：
+安装器会将 Tide Island 安装到 `/usr`，并可在以下发行版上自动安装依赖：
 
-- Debian、Ubuntu 及其衍生版：`apt`
-- Fedora、RHEL 及其衍生版：`dnf`
-- openSUSE：`zypper`
+- 使用 `apt` 的 Debian、Ubuntu 及其衍生发行版
+- 使用 `dnf` 的 Fedora、RHEL 及其衍生发行版
+- 使用 `zypper` 的 openSUSE
 
-其他发行版请先自行安装依赖，然后运行：
+对于其他发行版，请手动安装依赖，然后运行：
 
 ```bash
 ./install.sh --skip-deps
 ```
 
-如果 `/usr/bin/quickshell` 已存在，安装器会直接使用；否则会构建并校验本版本
-固定的 Quickshell 版本。要求 Qt 6.6 或更高版本。
+如果 `/usr/bin/quickshell` 存在，安装器会直接使用它；否则，安装器会构建当前发行版锁定、经过验证且与其兼容的 Quickshell 版本。需要 Qt 6.6 或更高版本。
 
-这个源码安装器面向 `/usr` 可写的常规 Linux 系统。NixOS、Fedora Silverblue
-等声明式或不可变系统应使用原生软件包，或在可写的开发容器中安装。
+此源码安装器适用于 `/usr` 可写的常规 Linux 系统。NixOS、Fedora Silverblue 等声明式或不可变系统应改用原生软件包，或在可写的开发容器中安装。
 
 常用安装选项：
 
-| 参数 | 作用 |
+| 选项 | 说明 |
 | --- | --- |
 | `./install.sh --no-service` | 安装 Tide Island，但不启用或启动 systemd 用户服务。 |
-| `./install.sh --skip-quickshell` | 跳过 Quickshell 的源码构建，使用现有的 `/usr/bin/quickshell`；如果该文件不存在，安装会报错退出。 |
-| `./install.sh --force-build-quickshell` | 即使系统中已有 Quickshell，也强制重新构建并安装项目固定的 Quickshell 版本。 |
-| `./install.sh --uninstall` | 卸载由源码安装器安装的 Tide Island 文件；已安装的依赖和 Quickshell 会保留。 |
+| `./install.sh --skip-quickshell` | 跳过从源码构建 Quickshell，使用现有的 `/usr/bin/quickshell`；如果该文件不存在，安装会报错并停止。 |
+| `./install.sh --force-build-quickshell` | 即使系统中已安装 Quickshell，也重新构建并安装项目指定的 Quickshell 版本。 |
+| `./install.sh --uninstall` | 移除由源码安装器安装的 Tide Island 文件；已安装的依赖和 Quickshell 会保留。 |
 
 <br>
 
@@ -183,82 +180,90 @@ cd Tide-island-*
 
 Tide Island 提供 systemd 用户服务。
 
-启用并立即启动：
+立即启用并启动（推荐）：
 
 ```bash
-systemctl --user enable --now tide-island
+systemctl --user enable --now tide-island.service
 ```
 
-如果要手动设置自启动，可以在 `hyprland.conf` 里加入:
+如果希望手动管理自启动，请在 `hyprland.conf` 中添加：
 
 ```conf
 exec-once = tide-island
 ```
 
-或者在 `hyprland.lua` 里加入:
+或者在 `hyprland.lua` 中添加：
 
 ```lua
 hl.exec_once("tide-island")
 ```
 
-如果已经启用了 systemd 服务，就不需要再添加 `exec-once`。
+如果已启用 systemd 服务，则无需再添加 `exec-once`。
 
 <br>
 
 ## 配置
 
-在应用启动器里搜索 `Tide Island Settings`。
-
-<br>
+在任意应用启动器中搜索 `Tide Island Settings`。
 
 ## 常用命令
 
-#### 修改配置后重启:
+#### 修改配置后重启：
 
 ```bash
 systemctl --user restart tide-island
 ```
 
-#### 停止 Tide Island:
+#### 停止 Tide Island：
 
 ```bash
 systemctl --user stop tide-island
 ```
 
-#### 查看日志:
+#### 查看日志：
 
 ```bash
 journalctl --user -u tide-island -f
 ```
 
-修改配置后，重启服务：
+#### IPC 命令
 
-```bash
-systemctl --user restart tide-island
-```
+可以通过 `quickshell ipc call` 远程控制 Tide Island：
+
+| 命令 | 操作 |
+| --- | --- |
+| `quickshell ipc call tide toggleNotificationCenter` | 打开或关闭通知中心 |
+| `quickshell ipc call tide openNotificationCenter` | 打开通知中心 |
+| `quickshell ipc call tide closeNotificationCenter` | 关闭通知中心 |
+| `quickshell ipc call tide toggleApplicationLauncher` | 打开或关闭应用启动器 |
 
 <br>
 
+### 清除通知
+
+点击通知卡片上的 × 按钮可以清除单条通知。使用 **全部清除** 可以一次清除所有通知。
+
 ## 贡献
 
-欢迎提交 issue、bug 反馈、设计建议和 pull request。
+欢迎提交 issue、bug 报告、设计建议和 pull request。
 
 ## 致谢
 
 感谢：
 
-- [@end-4](https://github.com/end-4) 提供工作区概览设计灵感
+- [@end-4](https://github.com/end-4) 提供工作区总览的设计灵感
 - [@gozhuimeng](https://github.com/gozhuimeng) 改进歌词后端
+- [@LatifKovani](https://github.com/LatifKovani) 带来重要改进
 
 ## 社区
 
-- Discord: https://discord.gg/gEmqgz76
+- Discord: https://discord.gg/Rcj3uPtKwD
 - Email: enhaoswen@gmail.com
 
 ---
 
 <p align="center">
   <sub>
-    为喜欢安静,实用桌面的用户而做。
+    为喜欢安静、实用桌面的 Wayland 用户而作。
   </sub>
 </p>

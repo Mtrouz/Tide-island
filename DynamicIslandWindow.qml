@@ -156,9 +156,13 @@ PanelWindow {
         if (islandContainer.wallpaperPickerLayerVisible
                 || islandContainer.applicationLauncherLayerVisible)
             return WlrKeyboardFocus.Exclusive;
+        // Keep keyboard focus on the overview until an overview action closes it.
+        // Click-to-focus closes the overview before focusing the selected client.
+        if (root.monitorFocused && root.overviewVisible)
+            return WlrKeyboardFocus.Exclusive;
         if (islandContainer.expandedPlayerKeyboardFocusRequested)
             return WlrKeyboardFocus.OnDemand;
-        if (root.monitorFocused && (root.overviewVisible || root.connectivityPromptActive))
+        if (root.monitorFocused && root.connectivityPromptActive)
             return WlrKeyboardFocus.OnDemand;
         return WlrKeyboardFocus.None;
     }
@@ -533,8 +537,28 @@ PanelWindow {
     function swipeRightWindow() {
         if (islandContainer.restingState === "lyrics")
             islandContainer.showTimeCapsule();
+        else if (islandContainer.restingState === "normal") {
+            if (islandContainer.hasCustomLeftItems)
+                islandContainer.showCustomCapsule();
+            else
+                islandContainer.showLyricsCapsule();
+        }
+        else
+            islandContainer.showLyricsCapsule();
+
+        showAutoHiddenIsland("manual");
+        scheduleAutoHide();
+    }
+
+    function swipeLeftWindow() {
+        if (islandContainer.restingState === "custom")
+            islandContainer.showTimeCapsule();
         else if (islandContainer.restingState === "normal")
+            islandContainer.showLyricsCapsule();
+        else if (islandContainer.hasCustomLeftItems)
             islandContainer.showCustomCapsule();
+        else
+            islandContainer.showTimeCapsule();
 
         showAutoHiddenIsland("manual");
         scheduleAutoHide();
@@ -913,6 +937,10 @@ PanelWindow {
             }
 
             onWorkspaceActivated: function(workspaceId) {
+                if(userConfig.islandShowWorkspaceOnAutoHide){
+                    root.showAutoHiddenIsland();
+                }
+
                 islandContainer.showWorkspaceCapsule(workspaceId);
             }
         }
@@ -932,7 +960,24 @@ PanelWindow {
         Keys.onPressed: (event) => {
             if (!root.overviewVisible) return;
 
-            if ((event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier)) || event.key === Qt.Key_Backtab) {
+            const view = islandContainer.overviewView;
+            if (event.key === Qt.Key_H) {
+                if (view)
+                    view.focusAdjacentWorkspace(0, -1);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_J) {
+                if (view)
+                    view.focusAdjacentWorkspace(1, 0);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_K) {
+                if (view)
+                    view.focusAdjacentWorkspace(-1, 0);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_L) {
+                if (view)
+                    view.focusAdjacentWorkspace(0, 1);
+                event.accepted = true;
+            } else if ((event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier)) || event.key === Qt.Key_Backtab) {
                 if (root.hyprlandIntegration)
                     root.hyprlandIntegration.focusWorkspace("r-1");
                 event.accepted = true;
@@ -1718,7 +1763,7 @@ PanelWindow {
                 case "control_center":
                     return 34;
                 case "notification_center":
-                    return mainCapsule.targetHeight * 40 / 165;
+                    return mainCapsule.targetHeight * 36 / 165;
                 case "wallpaper_picker":
                 case "application_launcher":
                     return 34;
@@ -1745,7 +1790,7 @@ PanelWindow {
             )
             color: root.overviewContentVisible
                 ? root.overviewCapsuleColor
-                : (notificationHistorySurface ? "#080808" : StyleTokens.black)
+                : (notificationHistorySurface ? "#080808" : Qt.rgba(0, 0, 0, userConfig.islandBackgroundOpacity / 100.0))
             y: userConfig.islandTopMargin
                 - (1 - root.autoHideProgress) * (targetHeight + userConfig.islandTopMargin + 8)
             x: parent ? parent.width * userConfig.islandPositionX / 100 - width / 2 : 0

@@ -40,6 +40,59 @@ FocusScope {
     property bool closeAfterApply: false
     property bool releasingResources: false
     property var wallpaperIndexByPath: ({})
+
+    property string searchQuery: ""
+    property var filteredIndexByPath: ({})
+
+    ListModel {
+        id: filteredWallpapers
+    }
+
+    function matchesSearch(fileName) {
+        if (root.searchQuery === "")
+            return true;
+        return fileName.toLowerCase().indexOf(root.searchQuery.toLowerCase()) >= 0;
+    }
+
+    function rebuildFilteredWallpapers() {
+        filteredWallpapers.clear();
+        filteredIndexByPath = ({});
+        for (let i = 0; i < allWallpapers.count; i++) {
+            const item = allWallpapers.get(i);
+            if (matchesSearch(item.fileName)) {
+                filteredIndexByPath[item.filePath] = filteredWallpapers.count;
+                filteredWallpapers.append(item);
+            }
+        }
+        syncCurrentIndex();
+    }
+
+    function syncFilteredEntry(filePath) {
+        const sourceIndex = wallpaperIndexByPath[filePath];
+        if (sourceIndex === undefined)
+            return;
+        const item = allWallpapers.get(sourceIndex);
+        const matches = matchesSearch(item.fileName);
+        const existingIndex = filteredIndexByPath[filePath];
+
+        if (matches) {
+            if (existingIndex === undefined) {
+                filteredIndexByPath[filePath] = filteredWallpapers.count;
+                filteredWallpapers.append(item);
+            } else {
+                filteredWallpapers.set(existingIndex, item);
+            }
+        } else if (existingIndex !== undefined) {
+            filteredWallpapers.remove(existingIndex);
+            delete filteredIndexByPath[filePath];
+            for (const path in filteredIndexByPath) {
+                if (filteredIndexByPath[path] > existingIndex)
+                    filteredIndexByPath[path]--;
+            }
+        }
+    }
+
+    onSearchQueryChanged: rebuildFilteredWallpapers()
     property var pendingThumbnails: []
     property var pendingThumbnailKeys: ({})
     property bool thumbnailInFlight: false
@@ -158,6 +211,8 @@ FocusScope {
         inFlightThumbnailSourcePath = "";
         inFlightThumbnailCachePath = "";
         allWallpapers.clear();
+        filteredWallpapers.clear();
+        filteredIndexByPath = ({});
         if (scanProcess.running)
             scanProcess.running = false;
         scanProcess.running = true;
@@ -183,6 +238,8 @@ FocusScope {
         wallpapersLoaded = false;
         wallpaperIndexByPath = ({});
         allWallpapers.clear();
+        filteredWallpapers.clear();
+        filteredIndexByPath = ({});
         releasingResources = false;
     }
 
@@ -294,13 +351,15 @@ FocusScope {
 
         if (!cacheAvailable)
             enqueueThumbnail(filePath, cachePath);
+
+        syncFilteredEntry(filePath);
     }
 
     function syncCurrentIndex() {
         if (root.effectiveActiveWallpaper === "")
             return;
-        for (let i = 0; i < allWallpapers.count; i++) {
-            if (allWallpapers.get(i).filePath === root.effectiveActiveWallpaper) {
+        for (let i = 0; i < filteredWallpapers.count; i++) {
+            if (filteredWallpapers.get(i).filePath === root.effectiveActiveWallpaper) {
                 pathView.currentIndex = i;
                 return;
             }
@@ -310,6 +369,11 @@ FocusScope {
     function grabKeyboardFocus() {
         root.focus = true;
         root.forceActiveFocus();
+    }
+
+    function focusSearch() {
+        searchBar.expanded = true;
+        searchInput.forceActiveFocus();
     }
 
     function moveNext() {
@@ -326,6 +390,10 @@ FocusScope {
             root.closeRequested();
             event.accepted = true;
             break;
+        case Qt.Key_Slash:
+            root.focusSearch();
+            event.accepted = true;
+            break;
         case Qt.Key_Right:
         case Qt.Key_L:
         case Qt.Key_Tab:
@@ -340,8 +408,8 @@ FocusScope {
             break;
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            if (allWallpapers.count > 0)
-                root.applyWallpaper(allWallpapers.get(pathView.currentIndex).filePath);
+            if (filteredWallpapers.count > 0)
+                root.applyWallpaper(filteredWallpapers.get(pathView.currentIndex).filePath);
             event.accepted = true;
             break;
         }
@@ -419,6 +487,14 @@ FocusScope {
                     allWallpapers.setProperty(modelIndex, "thumbnailRequested", true);
                     allWallpapers.setProperty(modelIndex, "thumbnailSource", root.thumbnailUrl(finishedCachePath, revision));
                     allWallpapers.setProperty(modelIndex, "cacheRevision", revision);
+
+                    const filteredIdx = root.filteredIndexByPath[sourcePath];
+                    if (filteredIdx !== undefined) {
+                        filteredWallpapers.setProperty(filteredIdx, "thumbnailReady", true);
+                        filteredWallpapers.setProperty(filteredIdx, "thumbnailRequested", true);
+                        filteredWallpapers.setProperty(filteredIdx, "thumbnailSource", root.thumbnailUrl(finishedCachePath, revision));
+                        filteredWallpapers.setProperty(filteredIdx, "cacheRevision", revision);
+                    }
                 }
             }
 
@@ -482,8 +558,8 @@ FocusScope {
     readonly property real topPad: 14
     readonly property real botPad: 8
     readonly property real hPad: 12
-    readonly property real headerH: 0
-    readonly property real headerGap: 0
+    readonly property real headerH: 34
+    readonly property real headerGap: 6
     readonly property real labelH: 22
     readonly property real labelGap: 5
 
@@ -507,6 +583,124 @@ FocusScope {
         anchors.bottomMargin: root.botPad
         spacing: 6
 
+        // ── Search bar (collapsible) ──────────────────────────────────────
+        Item {
+            id: searchBar
+            property bool expanded: false
+
+            width: parent.width
+            height: 34
+
+            Rectangle {
+                id: searchBg
+                width: searchBar.expanded ? parent.width : 34
+                height: 34
+                anchors.right: parent.right
+                radius: 10
+                color: Qt.rgba(1, 1, 1, searchBar.expanded ? 0.06 : (iconMouse.containsMouse ? 0.10 : 0.06))
+                border.width: searchInput.activeFocus ? 1 : 0
+                border.color: "#60a5fa"
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 180
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+
+            Rectangle {
+                id: iconButton
+                width: 34
+                height: 34
+                anchors.right: parent.right
+                color: "transparent"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "\uf002"
+                    font.family: root.iconFontFamily
+                    font.pixelSize: 12
+                    color: Qt.rgba(1, 1, 1, searchBar.expanded ? 0.55 : 0.35)
+                }
+
+                MouseArea {
+                    id: iconMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: !searchBar.expanded
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.focusSearch()
+                }
+            }
+
+            TextInput {
+                id: searchInput
+                visible: searchBar.expanded
+                anchors.left: searchBg.left
+                anchors.right: clearButton.visible ? clearButton.left : iconButton.left
+                anchors.leftMargin: 10
+                anchors.rightMargin: 6
+                anchors.verticalCenter: parent.verticalCenter
+                color: "white"
+                font.pixelSize: 12
+                font.family: root.textFontFamily
+                clip: true
+                selectByMouse: true
+                onTextChanged: root.searchQuery = text
+
+                onActiveFocusChanged: {
+                    if (!activeFocus && text === "")
+                        searchBar.expanded = false;
+                }
+
+                Keys.onEscapePressed: {
+                    if (text !== "")
+                        text = "";
+                    else
+                        searchBar.expanded = false;
+                }
+            }
+
+            Text {
+                visible: searchBar.expanded && searchInput.text === ""
+                text: "Search wallpapers…"
+                font.pixelSize: 12
+                font.family: root.textFontFamily
+                color: Qt.rgba(1, 1, 1, 0.28)
+                anchors.left: searchInput.left
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Rectangle {
+                id: clearButton
+                visible: searchBar.expanded && searchInput.text !== ""
+                width: 20
+                height: 20
+                radius: 10
+                color: clearMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
+                anchors.right: iconButton.left
+                anchors.rightMargin: 4
+                anchors.verticalCenter: parent.verticalCenter
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "\uf00d"
+                    font.family: root.iconFontFamily
+                    font.pixelSize: 10
+                    color: Qt.rgba(1, 1, 1, 0.5)
+                }
+
+                MouseArea {
+                    id: clearMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: searchInput.text = ""
+                }
+            }
+        }
+
         // ── Carousel ───────────────────────────────────────────────────────
         Item {
             width: parent.width
@@ -516,7 +710,7 @@ FocusScope {
             Column {
                 anchors.centerIn: parent
                 spacing: 8
-                visible: !root.wallpapersLoaded || allWallpapers.count === 0
+                visible: !root.wallpapersLoaded || filteredWallpapers.count === 0
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -527,8 +721,8 @@ FocusScope {
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.wallpapersLoaded && allWallpapers.count === 0
-                    text: "No wallpapers found\nin " + root.displayPath(root.wallpaperDir)
+                    visible: root.wallpapersLoaded && filteredWallpapers.count === 0
+                    text: allWallpapers.count === 0 ? ("No wallpapers found\nin " + root.displayPath(root.wallpaperDir)) : ("No wallpapers match \"" + root.searchQuery + "\"")
                     horizontalAlignment: Text.AlignHCenter
                     color: Qt.rgba(1, 1, 1, 0.22)
                     font.pixelSize: 11
@@ -540,11 +734,11 @@ FocusScope {
             PathView {
                 id: pathView
                 anchors.fill: parent
-                model: root.showCondition ? allWallpapers : null
-                visible: allWallpapers.count > 0
+                model: root.showCondition ? filteredWallpapers : null
+                visible: filteredWallpapers.count > 0
                 clip: false
 
-                pathItemCount: Math.min(allWallpapers.count, 5)
+                pathItemCount: Math.min(filteredWallpapers.count, 5)
                 cacheItemCount: 4
                 snapMode: PathView.SnapToItem
                 preferredHighlightBegin: 0.5

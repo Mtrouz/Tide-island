@@ -21,6 +21,14 @@ FocusScope {
     property var sortFavoriteIds: []
     property bool favoritesHydrated: false
     property int selectedIndex: -1
+    property bool favoriteDragActive: false
+    property string favoriteDragSourceId: ""
+    property int favoriteDragSourceIndex: -1
+    property int favoriteDragTargetIndex: -1
+    property real favoriteDragStartContentX: 0
+    property real favoriteDragTranslationX: 0
+    property real favoriteDragPointerX: 0
+    property string suppressedLaunchId: ""
 
     readonly property int visibleApplicationCount: filteredApplications.length
 
@@ -42,6 +50,132 @@ FocusScope {
 
     function isSortFavorite(entry) {
         return !!entry && root.sortFavoriteIds.indexOf(String(entry.id)) >= 0;
+    }
+
+    function favoriteSortIndex(entry) {
+        if (!entry)
+            return -1;
+        return root.sortFavoriteIds.indexOf(String(entry.id));
+    }
+
+    function visibleSortableFavoriteIds() {
+        const visibleIds = [];
+        for (let index = 0; index < root.filteredApplications.length; ++index) {
+            const entry = root.filteredApplications[index];
+            if (root.isFavorite(entry) && root.isSortFavorite(entry))
+                visibleIds.push(String(entry.id));
+        }
+        return visibleIds;
+    }
+
+    function canDragFavorite(entry, index) {
+        if (root.query !== "" || !root.isFavorite(entry) || !root.isSortFavorite(entry))
+            return false;
+
+        const visibleIds = root.visibleSortableFavoriteIds();
+        return index >= 0 && index < visibleIds.length
+            && visibleIds[index] === String(entry.id);
+    }
+
+    function beginFavoriteDrag(entry, index) {
+        if (!root.canDragFavorite(entry, index))
+            return;
+
+        root.favoriteDragActive = true;
+        root.favoriteDragSourceId = String(entry.id);
+        root.favoriteDragSourceIndex = index;
+        root.favoriteDragTargetIndex = index;
+        root.favoriteDragStartContentX = appGrid.contentX;
+        root.favoriteDragTranslationX = 0;
+        root.favoriteDragPointerX = 0;
+        root.suppressedLaunchId = root.favoriteDragSourceId;
+    }
+
+    function updateFavoriteDrag(translationX, pointerX) {
+        if (!root.favoriteDragActive)
+            return;
+
+        root.favoriteDragTranslationX = translationX;
+        root.favoriteDragPointerX = pointerX;
+        root.refreshFavoriteDragTarget();
+    }
+
+    function refreshFavoriteDragTarget() {
+        if (!root.favoriteDragActive)
+            return;
+
+        const favoriteCount = root.visibleSortableFavoriteIds().length;
+        if (favoriteCount <= 0)
+            return;
+
+        const contentDelta = appGrid.contentX - root.favoriteDragStartContentX;
+        const columnDelta = Math.round(
+            (root.favoriteDragTranslationX + contentDelta) / appGrid.cellWidth);
+        root.favoriteDragTargetIndex = Math.max(0, Math.min(
+            favoriteCount - 1, root.favoriteDragSourceIndex + columnDelta));
+    }
+
+    function favoriteShiftForIndex(index) {
+        if (!root.favoriteDragActive || index === root.favoriteDragSourceIndex)
+            return 0;
+
+        if (root.favoriteDragSourceIndex < root.favoriteDragTargetIndex
+                && index > root.favoriteDragSourceIndex
+                && index <= root.favoriteDragTargetIndex)
+            return -appGrid.cellWidth;
+
+        if (root.favoriteDragSourceIndex > root.favoriteDragTargetIndex
+                && index >= root.favoriteDragTargetIndex
+                && index < root.favoriteDragSourceIndex)
+            return appGrid.cellWidth;
+
+        return 0;
+    }
+
+    function favoriteDragVisualOffset() {
+        if (!root.favoriteDragActive)
+            return 0;
+        return root.favoriteDragTranslationX
+            + appGrid.contentX - root.favoriteDragStartContentX;
+    }
+
+    function finishFavoriteDrag() {
+        if (!root.favoriteDragActive)
+            return;
+
+        const sourceId = root.favoriteDragSourceId;
+        const sourceIndex = root.favoriteDragSourceIndex;
+        const targetIndex = root.favoriteDragTargetIndex;
+        const targetEntry = targetIndex >= 0 && targetIndex < root.filteredApplications.length
+            ? root.filteredApplications[targetIndex] : null;
+        const targetId = targetEntry ? String(targetEntry.id) : "";
+
+        root.favoriteDragActive = false;
+        root.favoriteDragSourceId = "";
+        root.favoriteDragSourceIndex = -1;
+        root.favoriteDragTargetIndex = -1;
+
+        if (sourceId !== "" && targetId !== "" && sourceIndex !== targetIndex) {
+            const nextFavorites = root.favoriteIds.slice();
+            const storedSourceIndex = nextFavorites.indexOf(sourceId);
+            if (storedSourceIndex >= 0)
+                nextFavorites.splice(storedSourceIndex, 1);
+
+            let storedTargetIndex = nextFavorites.indexOf(targetId);
+            if (storedSourceIndex >= 0 && storedTargetIndex >= 0) {
+                if (targetIndex > sourceIndex)
+                    ++storedTargetIndex;
+                nextFavorites.splice(storedTargetIndex, 0, sourceId);
+
+                root.favoriteIds = nextFavorites;
+                root.sortFavoriteIds = nextFavorites.slice();
+                favoriteStore.favoriteIds = nextFavorites;
+                favoritesFile.writeAdapter();
+                root.rebuildApplications();
+            }
+        }
+
+        suppressLaunchReset.restart();
     }
 
     function favoriteShortcutNumber(entry) {
@@ -179,6 +313,12 @@ FocusScope {
             const rightFavorite = root.isSortFavorite(right.entry);
             if (!hasQuery && leftFavorite !== rightFavorite)
                 return leftFavorite ? -1 : 1;
+            if (!hasQuery && leftFavorite && rightFavorite) {
+                const favoriteOrder = root.favoriteSortIndex(left.entry)
+                    - root.favoriteSortIndex(right.entry);
+                if (favoriteOrder !== 0)
+                    return favoriteOrder;
+            }
 
             const nameOrder = String(left.entry.name).localeCompare(String(right.entry.name));
             if (nameOrder !== 0)
@@ -292,6 +432,37 @@ FocusScope {
         interval: 0
         repeat: false
         onTriggered: root.grabKeyboardFocus()
+    }
+
+    Timer {
+        id: suppressLaunchReset
+        interval: 0
+        repeat: false
+        onTriggered: root.suppressedLaunchId = ""
+    }
+
+    Timer {
+        interval: 16
+        repeat: true
+        running: root.favoriteDragActive
+
+        onTriggered: {
+            const edgeSize = 48;
+            const minimumContentX = appGrid.originX;
+            const maximumContentX = minimumContentX
+                + Math.max(0, appGrid.contentWidth - appGrid.width);
+            let nextContentX = appGrid.contentX;
+
+            if (root.favoriteDragPointerX < edgeSize)
+                nextContentX = Math.max(minimumContentX, nextContentX - 10);
+            else if (root.favoriteDragPointerX > appGrid.width - edgeSize)
+                nextContentX = Math.min(maximumContentX, nextContentX + 10);
+
+            if (nextContentX !== appGrid.contentX) {
+                appGrid.contentX = nextContentX;
+                root.refreshFavoriteDragTarget();
+            }
+        }
     }
 
     Keys.onPressed: event => {
@@ -433,6 +604,7 @@ FocusScope {
             cellHeight: height
             flow: GridView.FlowTopToBottom
             clip: true
+            interactive: !root.favoriteDragActive
             boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: 1800
             keyNavigationEnabled: false
@@ -446,21 +618,46 @@ FocusScope {
                 readonly property bool selected: index === root.selectedIndex
                 readonly property bool favorite: root.isFavorite(entry)
                 readonly property int favoriteNumber: root.favoriteShortcutNumber(entry)
+                readonly property bool favoriteDraggable: root.canDragFavorite(entry, index)
 
                 width: appGrid.cellWidth
                 height: appGrid.cellHeight
+                z: root.favoriteDragActive
+                    && root.favoriteDragSourceId === String(entry.id) ? 10 : 0
 
                 Item {
+                    id: appCard
+
                     z: 2
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: 8
                     width: parent.width - 10
                     height: 124
-                    scale: appArea.pressed ? 0.95 : (appDelegate.selected || appArea.containsMouse ? 1.035 : 1)
+                    scale: favoriteDrag.active ? 1.07
+                        : appArea.pressed ? 0.95
+                        : (appDelegate.selected || appArea.containsMouse ? 1.035 : 1)
 
                     Behavior on scale {
                         NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
                     }
+
+                    transform: [
+                        Translate {
+                            x: root.favoriteDragActive
+                                && root.favoriteDragSourceId === String(appDelegate.entry.id)
+                                ? root.favoriteDragVisualOffset() : 0
+                        },
+                        Translate {
+                            x: root.favoriteShiftForIndex(appDelegate.index)
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: 150
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+                        }
+                    ]
 
                     Item {
                         id: iconArea
@@ -474,16 +671,17 @@ FocusScope {
                             anchors.centerIn: parent
                             width: 64
                             height: 64
-                            source: Quickshell.iconPath(appDelegate.entry.icon, "application-x-executable")
+                            source: Quickshell.iconPath(appDelegate.entry.icon, true)
                             asynchronous: true
                             mipmap: true
                         }
 
                         Text {
                             anchors.centerIn: parent
-                            visible: appIcon.status === Image.Error
+                            z: 100
+                            visible: appIcon.source.toString() === ""
                             text: String(appDelegate.entry.name).charAt(0).toLocaleUpperCase()
-                            color: "#f5f5f7"
+                            color: "white"
                             font.family: root.textFontFamily
                             font.pixelSize: 24
                             font.weight: Font.DemiBold
@@ -534,12 +732,16 @@ FocusScope {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
+                    cursorShape: favoriteDrag.active ? Qt.ClosedHandCursor
+                        : appDelegate.favoriteDraggable ? Qt.OpenHandCursor
+                        : Qt.PointingHandCursor
                     onEntered: {
                         root.selectedIndex = appDelegate.index;
                         appGrid.currentIndex = appDelegate.index;
                     }
                     onClicked: mouse => {
+                        if (root.suppressedLaunchId === String(appDelegate.entry.id))
+                            return;
                         if (mouse.button === Qt.RightButton)
                             root.toggleFavorite(appDelegate.entry);
                         else
@@ -549,6 +751,34 @@ FocusScope {
 
                 HoverHandler {
                     id: delegateHover
+                }
+
+                DragHandler {
+                    id: favoriteDrag
+
+                    enabled: appDelegate.favoriteDraggable
+                    target: null
+                    acceptedButtons: Qt.LeftButton
+                    xAxis.enabled: true
+                    yAxis.enabled: false
+
+                    onActiveChanged: {
+                        if (active) {
+                            root.beginFavoriteDrag(appDelegate.entry, appDelegate.index);
+                            const point = appDelegate.mapToItem(
+                                appGrid, centroid.position.x, centroid.position.y);
+                            root.updateFavoriteDrag(activeTranslation.x, point.x);
+                        } else if (root.favoriteDragSourceId === String(appDelegate.entry.id)) {
+                            root.finishFavoriteDrag();
+                        }
+                    }
+                    onActiveTranslationChanged: {
+                        if (!active)
+                            return;
+                        const point = appDelegate.mapToItem(
+                            appGrid, centroid.position.x, centroid.position.y);
+                        root.updateFavoriteDrag(activeTranslation.x, point.x);
+                    }
                 }
             }
 

@@ -77,6 +77,7 @@ Item {
     property string settlingAddress: ""
     property string hoveredAddress: ""
     property string pressedAddress: ""
+    property int pendingWorkspaceFocusId: -1
     property var windowToplevels: []
     property var windowMoveHints: ({})
     property string _toplevelSig: ""
@@ -113,6 +114,26 @@ Item {
     function workspaceOffset(wsId) {
         const s = wsId>0?wsId:1
         return { x:(workspaceImplicitWidth+workspaceSpacing)*getWsColumn(s), y:(workspaceImplicitHeight+workspaceSpacing)*getWsRow(s) }
+    }
+    function focusAdjacentWorkspace(rowDelta, columnDelta) {
+        const currentRow = getWsRow(effectiveActiveWorkspaceId)
+        const currentColumn = getWsColumn(effectiveActiveWorkspaceId)
+        const targetRow = currentRow + rowDelta
+        const targetColumn = currentColumn + columnDelta
+        if (targetRow < 0 || targetRow >= rows || targetColumn < 0 || targetColumn >= columns)
+            return false
+
+        const targetWorkspace = workspaceGroup * workspacesShown + getWsInCell(targetRow, targetColumn)
+        return hyprDispatch.focusWorkspace(targetWorkspace)
+    }
+    function closeAndFocusWorkspace(workspaceId) {
+        if (workspaceId < 1)
+            return false
+
+        pendingWorkspaceFocusId = workspaceId
+        root.closeRequested()
+        deferredWorkspaceFocusTimer.restart()
+        return true
     }
     function clamp(v,lo,hi) { const n=Number(v); return isFinite(n)?Math.max(lo,Math.min(hi,n)):lo }
     function tWidth(md) { if(!md) return monitor?monitor.width:(screen?screen.width:1920); return (md.transform&1)?md.height:md.width }
@@ -242,6 +263,17 @@ Item {
     Component.onCompleted: scheduleRefresh()
 
     Timer { id: refreshTimer; interval: 80; repeat: false; onTriggered: root.refreshToplevels() }
+    Timer {
+        id: deferredWorkspaceFocusTimer
+        interval: 50
+        repeat: false
+        onTriggered: {
+            const workspaceId = root.pendingWorkspaceFocusId
+            root.pendingWorkspaceFocusId = -1
+            if (workspaceId >= 1)
+                hyprDispatch.focusWorkspace(workspaceId)
+        }
+    }
 
     Connections {
         target: root.hyprlandData
@@ -409,7 +441,8 @@ Item {
                             hyprDispatch.closeWindow(addr)
                         } else if (mouse.button === Qt.LeftButton) {
                             const ws = root.workspaceAtPoint(mouse.x, mouse.y)
-                            if (ws !== -1) { root.closeRequested(); hyprDispatch.focusWorkspace(ws) }
+                            if (ws !== -1)
+                                root.closeAndFocusWorkspace(ws)
                         }
                     }
                     onPositionChanged: {
